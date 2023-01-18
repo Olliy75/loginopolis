@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const { User } = require('./db');
+const { Post } = require('./db');
 const bcrypt = require('bcrypt');
 
 const salt_count = 5;
@@ -14,6 +15,18 @@ app.get('/', async (req, res, next) => {
   } catch (error) {
     console.error(error);
     next(error)
+  }
+});
+
+app.get('/me', async (req, res, next) => {
+  const user = await User.findOne({where: {username: req.body.username}});
+  const ismatch = await bcrypt.compare(req.body.password,user.password)
+  if (ismatch){
+    const output = await Post.findAll({where: {userid: user.id}})
+    res.send(output)
+  }
+  else{
+    res.send("incorrect username or password")
   }
 });
 
